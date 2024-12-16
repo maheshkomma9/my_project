@@ -1,0 +1,154 @@
+from PIL import Image
+
+# Load an image
+image_path = '/content/drive/MyDrive/mahesh dataset/Dataset of Mammography with Benign Malignant Breast Masses/INbreast+MIAS+DDSM Dataset/Benign Masses/20586908 (52).png'
+image = Image.open(image_path)
+
+# Check if the image is grayscale or color
+print(f"Image mode: {image.mode}")
+Image mode: L
+
+ef evaluate_model(my_dataset,batch_size,epochs):
+  def rgb_to_grayscale(image, label):
+    image = tf.image.rgb_to_grayscale(image)
+    return image, label
+
+  train_data = image_dataset_from_directory(
+                  my_dataset,
+                  validation_split=0.2,
+                  subset="training",
+                  seed=123,
+                  image_size=(img_height, img_width),
+                  batch_size=batch_size)
+  val_data = image_dataset_from_directory(my_dataset,
+                                        validation_split=0.2,
+                                        subset="validation",
+                                        seed=123,
+                                        image_size=(img_height,img_width),
+                                        batch_size=batch_size)
+  test_data = image_dataset_from_directory(
+        test_dataset_path,
+        image_size=(img_height, img_width),
+        batch_size=batch_size)
+  train_data = train_data.map(rgb_to_grayscale)
+  val_data = val_data.map(rgb_to_grayscale)
+  test_data = test_data.map(rgb_to_grayscale)
+    
+  
+  data_augmentation = tf.keras.Sequential([
+    layers.RandomFlip("horizontal_and_vertical"),
+    layers.RandomRotation(0.2)])
+                                          
+  model = tf.keras.Sequential([
+
+   layers.Rescaling(1./255, input_shape=(img_height, img_width, 1)),
+
+  layers.Conv2D(16, 3, padding='same', activation='relu'),
+  layers.MaxPooling2D(),
+
+  layers.Conv2D(32, 3, padding='same', activation='relu'),
+  layers.MaxPooling2D(),
+
+  layers.Conv2D(64, 3, padding='same', activation='relu'),
+  layers.MaxPooling2D(),
+
+  layers.Dropout(0.5),
+  layers.Flatten(),
+
+  layers.Dense(128, activation='relu'),
+  layers.Dense(1,activation="sigmoid")
+])
+  model.compile(optimizer="Adam",
+            loss=tf.keras.losses.BinaryCrossentropy(),
+            metrics=["accuracy"])
+
+  history = model.fit(train_data,
+                    epochs=epochs,
+                    validation_data=val_data,
+                    batch_size=batch_size)
+  # Evaluate the model on the test data
+  test_loss, test_accuracy = model.evaluate(test_data)
+  print(f"Test Accuracy: {test_accuracy:.4f}")
+  print(f"Test Loss: {test_loss:.4f}")
+
+    # Plot training and validation accuracy/loss curves
+  acc = history.history['accuracy']
+  val_acc = history.history['val_accuracy']
+  loss = history.history['loss']
+  val_loss = history.history['val_loss']
+
+  epochs_range = range(epochs)
+
+  plt.figure(figsize=(12, 6))
+
+# Accuracy plot
+  plt.subplot(1, 2, 1)
+  plt.plot(epochs_range, acc, label='Training Accuracy')
+  plt.plot(epochs_range, val_acc, label='Validation Accuracy')
+  plt.legend()
+  plt.title('Training and Validation Accuracy')
+
+    # Loss plot
+  plt.subplot(1, 2, 2)
+  plt.plot(epochs_range, loss, label='Training Loss')
+  plt.plot(epochs_range, val_loss, label='Validation Loss')
+  plt.legend()
+  plt.title('Training and Validation Loss')
+
+  plt.show()
+  model.save('breast_cancer_model.h5')
+  from sklearn.metrics import classification_report, confusion_matrix
+
+  y_pred = model.predict(test_data)
+  y_pred_classes = np.argmax(y_pred, axis=1)
+  print(classification_report(y_true, y_pred_classes, target_names=['Benign', 'Malignant']))
+  
+  y_true = np.concatenate([y for _, y in test_data], axis=0)
+
+    # Get predictions from the model
+    y_pred = model.predict(test_data)
+    y_pred_classes = np.argmax(y_pred, axis=1)  # Get the class with the highest probability
+
+    # Generate the classification report
+    report = classification_report(y_true, y_pred_classes, target_names=['Benign', 'Malignant'])
+    print("Classification Report:\n", report)
+
+    # Generate the confusion matrix
+    cm = confusion_matrix(y_true, y_pred_classes)
+    
+    # Plot the confusion matrix using seaborn heatmap
+    plt.figure(figsize=(6, 6))
+    sns.heatmap(cm, annot=True, fmt='g', cmap='Blues', xticklabels=['Benign', 'Malignant'], yticklabels=['Benign', 'Malignant'])
+    plt.title("Confusion Matrix")
+    plt.xlabel('Predicted')
+    plt.ylabel('True')
+    plt.show()
+
+  return model
+
+  evaluate_model(Combined_Dataset,64,20)
+
+06/306 ━━━━━━━━━━━━━━━━━━━━ 95s 312ms/step - accuracy: 0.9720 - loss: 0.0778 - val_accuracy: 0.9430 - val_loss: 0.1848
+Epoch 13/20
+306/306 ━━━━━━━━━━━━━━━━━━━━ 142s 312ms/step - accuracy: 0.9778 - loss: 0.0603 - val_accuracy: 0.9563 - val_loss: 0.1436
+Epoch 14/20
+306/306 ━━━━━━━━━━━━━━━━━━━━ 141s 309ms/step - accuracy: 0.9842 - loss: 0.0468 - val_accuracy: 0.9536 - val_loss: 0.1503
+Epoch 15/20
+306/306 ━━━━━━━━━━━━━━━━━━━━ 146s 323ms/step - accuracy: 0.9825 - loss: 0.0496 - val_accuracy: 0.9581 - val_loss: 0.1431
+Epoch 16/20
+306/306 ━━━━━━━━━━━━━━━━━━━━ 97s 316ms/step - accuracy: 0.9867 - loss: 0.0357 - val_accuracy: 0.9567 - val_loss: 0.1391
+Epoch 17/20
+306/306 ━━━━━━━━━━━━━━━━━━━━ 137s 299ms/step - accuracy: 0.9860 - loss: 0.0374 - val_accuracy: 0.9622 - val_loss: 0.1436
+Epoch 18/20
+306/306 ━━━━━━━━━━━━━━━━━━━━ 144s 306ms/step - accuracy: 0.9888 - loss: 0.0303 - val_accuracy: 0.9616 - val_loss: 0.1569
+Epoch 19/20
+306/306 ━━━━━━━━━━━━━━━━━━━━ 95s 311ms/step - accuracy: 0.9908 - loss: 0.0288 - val_accuracy: 0.9663 - val_loss: 0.1448
+Epoch 20/20
+306/306 ━━━━━━━━━━━━━━━━━━━━ 144s 317ms/step - accuracy: 0.9907 - loss: 0.0263 - val_accuracy: 0.9512 - val_loss: 0.2552
+21/21 ━━━━━━━━━━━━━━━━━━━━ 4s 197ms/step - accuracy: 0.9658 - loss: 0.2876
+Test Accuracy: 0.9673
+Test Loss: 0.2978
+
+WARNING:absl:You are saving your model as an HDF5 file via `model.save()` or `keras.saving.save_model(model)`. This file format is considered legacy. We recommend using instead the native Keras format, e.g. `model.save('my_model.keras')` or `keras.saving.save_model(model, 'my_model.keras')`. 
+21/21 ━━━━━━━━━━━━━━━━━━━━ 6s 210ms/step
+---------------------------------------------------------------------------
