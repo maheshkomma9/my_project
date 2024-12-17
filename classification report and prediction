@@ -1,0 +1,164 @@
+def evaluate_model(my_dataset,batch_size,epochs):
+  def rgb_to_grayscale(image, label):
+    image = tf.image.rgb_to_grayscale(image)
+    return image, label
+
+  train_data = image_dataset_from_directory(
+                  my_dataset,
+                  validation_split=0.2,
+                  subset="training",
+                  seed=123,
+                  image_size=(img_height, img_width),
+                  batch_size=batch_size)
+  val_data = image_dataset_from_directory(my_dataset,
+                                        validation_split=0.2,
+                                        subset="validation",
+                                        seed=123,
+                                        image_size=(img_height,img_width),
+                                        batch_size=batch_size)
+  test_data = image_dataset_from_directory(
+        test_dataset_path,
+        image_size=(img_height, img_width),
+        batch_size=batch_size)
+  train_data = train_data.map(rgb_to_grayscale)
+  val_data = val_data.map(rgb_to_grayscale)
+  test_data = test_data.map(rgb_to_grayscale)
+    
+  
+  data_augmentation = tf.keras.Sequential([
+    layers.RandomFlip("horizontal_and_vertical"),
+    layers.RandomRotation(0.2)])
+                                          
+  model = tf.keras.Sequential([
+
+   layers.Rescaling(1./255, input_shape=(img_height, img_width, 1)),
+
+  layers.Conv2D(16, 3, padding='same', activation='relu'),
+  layers.MaxPooling2D(),
+
+  layers.Conv2D(32, 3, padding='same', activation='relu'),
+  layers.MaxPooling2D(),
+
+  layers.Conv2D(64, 3, padding='same', activation='relu'),
+  layers.MaxPooling2D(),
+
+  layers.Dropout(0.5),
+  layers.Flatten(),
+
+  layers.Dense(128, activation='relu'),
+  layers.Dense(1,activation="sigmoid")
+])
+  model.compile(optimizer="Adam",
+            loss=tf.keras.losses.BinaryCrossentropy(),
+            metrics=["accuracy"])
+
+  history = model.fit(train_data,
+                    epochs=epochs,
+                    validation_data=val_data,
+                    batch_size=batch_size)
+  # Evaluate the model on the test data
+  test_loss, test_accuracy = model.evaluate(test_data)
+  print(f"Test Accuracy: {test_accuracy:.4f}")
+  print(f"Test Loss: {test_loss:.4f}")
+
+    # Plot training and validation accuracy/loss curves
+  acc = history.history['accuracy']
+  val_acc = history.history['val_accuracy']
+  loss = history.history['loss']
+  val_loss = history.history['val_loss']
+
+  epochs_range = range(epochs)
+
+  plt.figure(figsize=(12, 6))
+
+# Accuracy plot
+  plt.subplot(1, 2, 1)
+  plt.plot(epochs_range, acc, label='Training Accuracy')
+  plt.plot(epochs_range, val_acc, label='Validation Accuracy')
+  plt.legend()
+  plt.title('Training and Validation Accuracy')
+
+    # Loss plot
+  plt.subplot(1, 2, 2)
+  plt.plot(epochs_range, loss, label='Training Loss')
+  plt.plot(epochs_range, val_loss, label='Validation Loss')
+  plt.legend()
+  plt.title('Training and Validation Loss')
+
+  plt.show()
+  model.save('breast_cancer_model.h5')
+  y_true = np.concatenate([y for _, y in test_data], axis=0)
+
+    # Get predictions from the model
+  y_pred = model.predict(test_data)
+  y_pred_classes = np.argmax(y_pred, axis=1)  # Get the class with the highest probability
+
+    # Generate the classification report
+  report = classification_report(y_true, y_pred_classes, target_names=['Benign', 'Malignant'])
+    
+  print("Classification Report:\n", report)
+
+    # Generate the confusion matrix
+  cm = confusion_matrix(y_true, y_pred_classes)
+    
+    # Plot the confusion matrix using seaborn heatmap
+  plt.figure(figsize=(6, 6))
+  sns.heatmap(cm, annot=True, fmt='g', cmap='Blues', xticklabels=['Benign', 'Malignant'], yticklabels=['Benign', 'Malignant'])
+    
+  plt.title("Confusion Matrix")
+  plt.xlabel('Predicted')
+  plt.ylabel('True')
+  plt.show()
+  return model
+
+evaluate_model(MIAS_Dataset,32,10)
+Found 3916 files belonging to 2 classes.
+Using 3133 files for training.
+Found 3916 files belonging to 2 classes.
+Using 783 files for validation.
+Found 1344 files belonging to 2 classes.
+/usr/local/lib/python3.10/dist-packages/keras/src/layers/preprocessing/tf_data_layer.py:19: UserWarning: Do not pass an `input_shape`/`input_dim` argument to a layer. When using Sequential models, prefer using an `Input(shape)` object as the first layer in the model instead.
+  super().__init__(**kwargs)
+Epoch 1/10
+98/98 ━━━━━━━━━━━━━━━━━━━━ 342s 3s/step - accuracy: 0.6239 - loss: 0.6609 - val_accuracy: 0.6475 - val_loss: 0.6366
+Epoch 2/10
+98/98 ━━━━━━━━━━━━━━━━━━━━ 61s 198ms/step - accuracy: 0.6779 - loss: 0.6243 - val_accuracy: 0.6756 - val_loss: 0.6060
+Epoch 3/10
+98/98 ━━━━━━━━━━━━━━━━━━━━ 18s 175ms/step - accuracy: 0.6951 - loss: 0.6025 - val_accuracy: 0.6756 - val_loss: 0.5888
+Epoch 4/10
+98/98 ━━━━━━━━━━━━━━━━━━━━ 21s 179ms/step - accuracy: 0.7095 - loss: 0.5773 - val_accuracy: 0.6858 - val_loss: 0.5780
+Epoch 5/10
+98/98 ━━━━━━━━━━━━━━━━━━━━ 22s 197ms/step - accuracy: 0.7449 - loss: 0.5331 - val_accuracy: 0.7407 - val_loss: 0.5237
+Epoch 6/10
+98/98 ━━━━━━━━━━━━━━━━━━━━ 20s 195ms/step - accuracy: 0.7856 - loss: 0.4930 - val_accuracy: 0.7791 - val_loss: 0.4744
+Epoch 7/10
+98/98 ━━━━━━━━━━━━━━━━━━━━ 18s 171ms/step - accuracy: 0.8250 - loss: 0.4170 - val_accuracy: 0.7905 - val_loss: 0.4323
+Epoch 8/10
+98/98 ━━━━━━━━━━━━━━━━━━━━ 23s 195ms/step - accuracy: 0.8291 - loss: 0.3815 - val_accuracy: 0.8238 - val_loss: 0.3675
+Epoch 9/10
+98/98 ━━━━━━━━━━━━━━━━━━━━ 18s 167ms/step - accuracy: 0.8639 - loss: 0.3139 - val_accuracy: 0.8595 - val_loss: 0.3471
+Epoch 10/10
+98/98 ━━━━━━━━━━━━━━━━━━━━ 20s 165ms/step - accuracy: 0.8897 - loss: 0.2592 - val_accuracy: 0.8889 - val_loss: 0.2906
+42/42 ━━━━━━━━━━━━━━━━━━━━ 233s 6s/step - accuracy: 0.5995 - loss: 1.2967
+Test Accuracy: 0.6034
+Test Loss: 1.3018
+
+WARNING:absl:You are saving your model as an HDF5 file via `model.save()` or `keras.saving.save_model(model)`. This file format is considered legacy. We recommend using instead the native Keras format, e.g. `model.save('my_model.keras')` or `keras.saving.save_model(model, 'my_model.keras')`. 
+42/42 ━━━━━━━━━━━━━━━━━━━━ 6s 131ms/step
+Classification Report:
+               precision    recall  f1-score   support
+
+      Benign       0.33      1.00      0.49       437
+   Malignant       0.00      0.00      0.00       907
+
+    accuracy                           0.33      1344
+   macro avg       0.16      0.50      0.25      1344
+weighted avg       0.11      0.33      0.16      1344
+
+/usr/local/lib/python3.10/dist-packages/sklearn/metrics/_classification.py:1531: UndefinedMetricWarning: Precision is ill-defined and being set to 0.0 in labels with no predicted samples. Use `zero_division` parameter to control this behavior.
+  _warn_prf(average, modifier, f"{metric.capitalize()} is", len(result))
+/usr/local/lib/python3.10/dist-packages/sklearn/metrics/_classification.py:1531: UndefinedMetricWarning: Precision is ill-defined and being set to 0.0 in labels with no predicted samples. Use `zero_division` parameter to control this behavior.
+  _warn_prf(average, modifier, f"{metric.capitalize()} is", len(result))
+/usr/local/lib/python3.10/dist-packages/sklearn/metrics/_classification.py:1531: UndefinedMetricWarning: Precision is ill-defined and being set to 0.0 in labels with no predicted samples. Use `zero_division` parameter to control this behavior.
+  _warn_prf(average, modifier, f"{metric.capitalize()} is", len(result))
+'''the model does not not predict the maligignant images due to imbalance in dataset'''
