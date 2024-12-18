@@ -1,0 +1,34 @@
+import os
+import shutil
+from sklearn.model_selection import train_test_split
+
+def split_dataset(dataset_path, output_dir, train_ratio=0.7, val_ratio=0.15, test_ratio=0.15):
+  
+    assert train_ratio + val_ratio + test_ratio == 1.0, "Train, validation, and test ratios must sum to 1."
+
+    # Create output directories for train, val, and test sets
+    for split in ['train', 'val', 'test']:
+        split_dir = os.path.join(output_dir, split)
+        os.makedirs(split_dir, exist_ok=True)
+
+    # Iterate over each class folder (e.g., 'benign', 'malignant')
+    for class_name in os.listdir(dataset_path):
+        class_dir = os.path.join(dataset_path, class_name)
+        if not os.path.isdir(class_dir):
+            continue
+
+        # Get all image files in the class directory
+        image_files = [os.path.join(class_dir, img) for img in os.listdir(class_dir) if img.endswith(('.png', '.jpg', '.jpeg'))]
+
+        # Split into train, val, and test sets
+        train_files, temp_files = train_test_split(image_files, test_size=(1 - train_ratio), random_state=123, stratify=None)
+        val_files, test_files = train_test_split(temp_files, test_size=(test_ratio / (val_ratio + test_ratio)), random_state=123, stratify=None)
+
+        # Copy files to the appropriate directories
+        for split, files in zip(['train', 'val', 'test'], [train_files, val_files, test_files]):
+            split_class_dir = os.path.join(output_dir, split, class_name)
+            os.makedirs(split_class_dir, exist_ok=True)
+            for file in files:
+                shutil.copy(file, split_class_dir)
+
+    print(f"Dataset successfully split into train, validation, and test sets at '{output_dir}'.")
