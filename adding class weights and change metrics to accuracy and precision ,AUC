@@ -1,0 +1,91 @@
+import os
+
+def calculate_class_weights_from_dataset(dataset_path):
+
+    class_counts = {}
+
+    # Count the number of images in each class subdirectory
+    for class_name in os.listdir(dataset_path):
+        class_dir = os.path.join(dataset_path, class_name)
+        if os.path.isdir(class_dir):
+            class_counts[class_name] = len(os.listdir(class_dir))
+
+    # Ensure we have counts for 'benign' and 'malignant'
+    if 'Benign Masses' not in class_counts or 'Malignant Masses' not in class_counts:
+        raise ValueError("Dataset must contain 'benign' and 'malignant' subdirectories.")
+
+    # Total number of images
+    total_images = sum(class_counts.values())
+
+    # Calculate weights
+    weight_for_benign = total_images / (2 * class_counts['Benign Masses'])
+    weight_for_malignant = total_images / (2 * class_counts['Malignant Masses'])
+
+    # Return weights as a dictionary
+
+
+    return {0: weight_for_benign, 1: weight_for_malignant}
+evaluate_model('/content/drive/MyDrive/INBreast_DD', 32,20,224,224)
+Found 5341 files belonging to 2 classes.
+Found 1145 files belonging to 2 classes.
+Found 1146 files belonging to 2 classes.
+Class Weights: {0: 1.5142857142857142, 1: 0.7464788732394366}
+Epoch 1/20
+/usr/local/lib/python3.10/dist-packages/keras/src/layers/preprocessing/tf_data_layer.py:19: UserWarning: Do not pass an `input_shape`/`input_dim` argument to a layer. When using Sequential models, prefer using an `Input(shape)` object as the first layer in the model instead.
+  super().__init__(**kwargs)
+167/167 ━━━━━━━━━━━━━━━━━━━━ 74s 416ms/step - accuracy: 0.5467 - auc_2: 0.4935 - loss: 0.6959 - val_accuracy: 0.5004 - val_auc_2: 0.5286 - val_loss: 0.6934
+Epoch 2/20
+167/167 ━━━━━━━━━━━━━━━━━━━━ 34s 145ms/step - accuracy: 0.5879 - auc_2: 0.5247 - loss: 0.6826 - val_accuracy: 0.3668 - val_auc_2: 0.5632 - val_loss: 0.7061
+Epoch 3/20
+167/167 ━━━━━━━━━━━━━━━━━━━━ 41s 142ms/step - accuracy: 0.5785 - auc_2: 0.5553 - loss: 0.6756 - val_accuracy: 0.6410 - val_auc_2: 0.6833 - val_loss: 0.6517
+Epoch 4/20
+167/167 ━━━━━━━━━━━━━━━━━━━━ 24s 141ms/step - accuracy: 0.6547 - auc_2: 0.6643 - loss: 0.6359 - val_accuracy: 0.6594 - val_auc_2: 0.7619 - val_loss: 0.6048
+Epoch 5/20
+167/167 ━━━━━━━━━━━━━━━━━━━━ 25s 149ms/step - accuracy: 0.6905 - auc_2: 0.7604 - loss: 0.5698 - val_accuracy: 0.7616 - val_auc_2: 0.8309 - val_loss: 0.5015
+Epoch 6/20
+167/167 ━━━━━━━━━━━━━━━━━━━━ 41s 149ms/step - accuracy: 0.7982 - auc_2: 0.8758 - loss: 0.4349 - val_accuracy: 0.7913 - val_auc_2: 0.8731 - val_loss: 0.4288
+Epoch 7/20
+167/167 ━━━━━━━━━━━━━━━━━━━━ 40s 144ms/step - accuracy: 0.8549 - auc_2: 0.9276 - loss: 0.3394 - val_accuracy: 0.8236 - val_auc_2: 0.9043 - val_loss: 0.3930
+Epoch 8/20
+167/167 ━━━━━━━━━━━━━━━━━━━━ 24s 144ms/step - accuracy: 0.8954 - auc_2: 0.9631 - loss: 0.2447 - val_accuracy: 0.8672 - val_auc_2: 0.9307 - val_loss: 0.3346
+Epoch 9/20
+167/167 ━━━━━━━━━━━━━━━━━━━━ 25s 149ms/step - accuracy: 0.9267 - auc_2: 0.9788 - loss: 0.1879 - val_accuracy: 0.9048 - val_auc_2: 0.9548 - val_loss: 0.2603
+Epoch 10/20
+167/167 ━━━━━━━━━━━━━━━━━━━━ 40s 143ms/step - accuracy: 0.9471 - auc_2: 0.9896 - loss: 0.1298 - val_accuracy: 0.9083 - val_auc_2: 0.9557 - val_loss: 0.2762
+Epoch 11/20
+167/167 ━━━━━━━━━━━━━━━━━━━━ 23s 138ms/step - accuracy: 0.9593 - auc_2: 0.9925 - loss: 0.1092 - val_accuracy: 0.9013 - val_auc_2: 0.9633 - val_loss: 0.2545
+Epoch 12/20
+167/167 ━━━━━━━━━━━━━━━━━━━━ 23s 139ms/step - accuracy: 0.9697 - auc_2: 0.9951 - loss: 0.0867 - val_accuracy: 0.9284 - val_auc_2: 0.9687 - val_loss: 0.2360
+Epoch 13/20
+167/167 ━━━━━━━━━━━━━━━━━━━━ 41s 138ms/step - accuracy: 0.9713 - auc_2: 0.9965 - loss: 0.0731 - val_accuracy: 0.9424 - val_auc_2: 0.9726 - val_loss: 0.2082
+Epoch 14/20
+167/167 ━━━━━━━━━━━━━━━━━━━━ 41s 137ms/step - accuracy: 0.9801 - auc_2: 0.9976 - loss: 0.0574 - val_accuracy: 0.9450 - val_auc_2: 0.9710 - val_loss: 0.2238
+Epoch 15/20
+167/167 ━━━━━━━━━━━━━━━━━━━━ 41s 136ms/step - accuracy: 0.9846 - auc_2: 0.9983 - loss: 0.0504 - val_accuracy: 0.9345 - val_auc_2: 0.9715 - val_loss: 0.2418
+Epoch 16/20
+167/167 ━━━━━━━━━━━━━━━━━━━━ 23s 140ms/step - accuracy: 0.9860 - auc_2: 0.9994 - loss: 0.0357 - val_accuracy: 0.9459 - val_auc_2: 0.9719 - val_loss: 0.2297
+Epoch 17/20
+167/167 ━━━━━━━━━━━━━━━━━━━━ 41s 140ms/step - accuracy: 0.9913 - auc_2: 0.9992 - loss: 0.0257 - val_accuracy: 0.9459 - val_auc_2: 0.9748 - val_loss: 0.2133
+Epoch 18/20
+167/167 ━━━━━━━━━━━━━━━━━━━━ 40s 133ms/step - accuracy: 0.9928 - auc_2: 0.9994 - loss: 0.0231 - val_accuracy: 0.9406 - val_auc_2: 0.9742 - val_loss: 0.2119
+Epoch 19/20
+167/167 ━━━━━━━━━━━━━━━━━━━━ 22s 130ms/step - accuracy: 0.9933 - auc_2: 0.9997 - loss: 0.0190 - val_accuracy: 0.9432 - val_auc_2: 0.9779 - val_loss: 0.2053
+Epoch 20/20
+167/167 ━━━━━━━━━━━━━━━━━━━━ 42s 137ms/step - accuracy: 0.9891 - auc_2: 0.9993 - loss: 0.0275 - val_accuracy: 0.9459 - val_auc_2: 0.9795 - val_loss: 0.1988
+36/36 ━━━━━━━━━━━━━━━━━━━━ 6s 164ms/step - accuracy: 0.9496 - auc_2: 0.9791 - loss: 0.1918
+Test Accuracy: 0.9476
+Test AUC: 0.9724
+36/36 ━━━━━━━━━━━━━━━━━━━━ 4s 88ms/step
+Precision-Recall AUC: 0.6659
+
+WARNING:absl:You are saving your model as an HDF5 file via `model.save()` or `keras.saving.save_model(model)`. This file format is considered legacy. We recommend using instead the native Keras format, e.g. `model.save('my_model.keras')` or `keras.saving.save_model(model, 'my_model.keras')`. 
+Classification Report:
+               precision    recall  f1-score   support
+
+      Benign       0.35      0.34      0.35       379
+   Malignant       0.68      0.69      0.69       767
+
+    accuracy                           0.58      1146
+   macro avg       0.52      0.52      0.52      1146
+weighted avg       0.57      0.58      0.57      1146
+
