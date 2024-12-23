@@ -1,0 +1,71 @@
+import os
+import shutil
+from sklearn.model_selection import train_test_split
+
+def split_dataset(dataset_path, output_dir, train_ratio=0.7, val_ratio=0.15, test_ratio=0.15):
+
+    # Ensure ratios sum to 1
+    assert train_ratio + val_ratio + test_ratio == 1.0, "Train, validation, and test ratios must sum to 1."
+
+    # Create output directories for train, val, and test sets
+    for split in ['train', 'val', 'test']:
+        split_dir = os.path.join(output_dir, split)
+        os.makedirs(split_dir, exist_ok=True)
+
+    # Iterate over each class folder (e.g., 'benign', 'malignant')
+    for class_name in os.listdir(dataset_path):
+        class_dir = os.path.join(dataset_path, class_name)
+        if not os.path.isdir(class_dir):
+            continue
+
+        # Get all image files in the class directory
+        image_files = [os.path.join(class_dir, img) for img in os.listdir(class_dir) if img.endswith(('.png', '.jpg', '.jpeg'))]
+
+        # Split into train, val, and test sets
+        train_files, temp_files = train_test_split(image_files, test_size=(1 - train_ratio), random_state=123, stratify=None)
+        val_files, test_files = train_test_split(temp_files, test_size=(test_ratio / (val_ratio + test_ratio)), random_state=123, stratify=None)
+
+        # Copy files to the appropriate directories
+        for split, files in zip(['train', 'val', 'test'], [train_files, val_files, test_files]):
+            split_class_dir = os.path.join(output_dir, split, class_name)
+            os.makedirs(split_class_dir, exist_ok=True)
+            for file in files:
+                shutil.copy(file, split_class_dir)
+
+    print(f"Dataset successfully split into train, validation, and test sets at '{output_dir}'.")
+
+
+def balance_dataset(dataset):
+    """
+    Balances a dataset by resampling to ensure an equal number of benign and malignant samples.
+
+    Parameters:
+    - dataset: A TensorFlow dataset containing images and labels.
+
+    Returns:
+    - Balanced dataset as numpy arrays.
+    """
+    X, y = [], []
+    for images, labels in dataset:
+        X.append(images.numpy())
+        y.append(labels.numpy())
+    X = np.concatenate(X, axis=0)
+    y = np.concatenate(y, axis=0)
+
+    # Separate benign and malignant samples
+    benign = X[y == 0]
+    malignant = X[y == 1]
+
+    # Resample to balance the dataset
+    if len(benign) > len(malignant):
+        benign = resample(benign, replace=False, n_samples=len(malignant), random_state=42)
+    else:
+        malignant = resample(malignant, replace=False, n_samples=len(benign), random_state=42)
+
+    # Combine balanced classes
+    X_balanced = np.concatenate([benign, malignant], axis=0)
+    y_balanced = np.array([0] * len(benign) + [1] * len(malignant))
+
+    # Shuffle the dataset
+    shuffled_indices = np.random.permutation(len(y_balanced))
+    return X_balanced[shuffled_indices], y_balanced[shuffled_indices]
